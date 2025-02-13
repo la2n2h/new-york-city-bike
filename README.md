@@ -183,9 +183,186 @@ SELECT
 FROM `deductive-wares-447204-s0.biketrip.bike_trip`
 GROUP BY usertype;
 ```
-usertype	user_count
-Subscriber	1589760
-Customer	648443
+| usertype   | user_count |
+|------------|------------|
+| Subscriber | 1589760    |
+| Customer   | 648443     |
+
+#### Most Popular Start and End Neighborhoods;
+```
+SELECT 
+    neighborhood_start, COUNT(*) AS start_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY neighborhood_start
+ORDER BY start_count DESC
+LIMIT 10;
+```
+| neighborhood_start            | start_count |
+|-------------------------------|-------------|
+| Chelsea and Clinton           | 543768      |
+| Gramercy Park and Murray Hill | 348719      |
+| Lower Manhattan               | 318512      |
+| Lower East Side               | 304063      |
+| Greenwich Village and Soho    | 277903      |
+| Northwest Brooklyn            | 147875      |
+| Greenpoint                    | 67558       |
+| Tribeca                       | 58471       |
+| Upper West Side               | 57407       |
+| Upper East Side               | 50209       |
+
+```
+SELECT 
+    neighborhood_end, COUNT(*) AS end_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY neighborhood_end
+ORDER BY end_count DESC
+LIMIT 10;
+```
+| neighborhood_end              | end_count |
+|-------------------------------|-----------|
+| Chelsea and Clinton           | 537945    |
+| Gramercy Park and Murray Hill | 341624    |
+| Lower Manhattan               | 317746    |
+| Lower East Side               | 307672    |
+| Greenwich Village and Soho    | 280209    |
+| Northwest Brooklyn            | 152972    |
+| Greenpoint                    | 69305     |
+| Tribeca                       | 60153     |
+| Upper West Side               | 59203     |
+| Upper East Side               | 49035     |
+
+#### Trip Duration Analysis
+```
+SELECT 
+    AVG(trip_minutes) AS avg_trip_duration,
+    MIN(trip_minutes) AS min_trip_duration,
+    MAX(trip_minutes) AS max_trip_duration
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`;
+```
+| avg_trip_duration | min_trip_duration | max_trip_duration |
+|-------------------|-------------------|-------------------|
+| 37.56476513       | 0                 | 97740             |
+
+#### Weather Impact on Trips
+```
+SELECT 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation, 
+    AVG(trip_count) AS avg_trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation
+ORDER BY avg_trip_count DESC;
+```
+| day_mean_temperature | day_mean_wind_speed | day_total_precipitation | avg_trip_count |
+|----------------------|---------------------|-------------------------|----------------|
+| 68.8                 | 3.3                 | 0                       | 10.53825219    |
+| 60.6                 | 2.3                 | 0                       | 10.1700807     |
+| 64.5                 | 3.9                 | 0                       | 10.15588836    |
+| 73.6                 | 3.5                 | 0                       | 10.13100081    |
+| 64.1                 | 3.8                 | 0                       | 10.05189621    |
+| 69.4                 | 5.6                 | 0                       | 10.04165547    |
+| 66.2                 | 3.9                 | 0                       | 10.03952206    |
+| 68.1                 | 7.1                 | 0                       | 10.03773033    |
+| 64.3                 | 2.4                 | 0.34                    | 10.03125       |
+| 70.8                 | 2.8                 | 0                       | 10.02993348    |
+| 63.2                 | 5.2                 | 0                       | 10.00143627    |
+| 65.8                 | 1.8                 | 0                       | 9.993536224    |
+
+####  Daily Trip Trends
+Analyze the number of trips per day.
+```
+SELECT 
+    start_day, 
+    COUNT(*) AS trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY start_day
+ORDER BY start_day;
+```
+
+####  Borough-to-Borough Trips
+```
+SELECT 
+    borough_start, 
+    borough_end, 
+    COUNT(*) AS trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY borough_start, borough_end
+ORDER BY trip_count DESC;
+```
+| borough_start | borough_end | trip_count |
+|---------------|-------------|------------|
+| Manhattan     | Manhattan   | 1823858    |
+| Brooklyn      | Brooklyn    | 139795     |
+| Manhattan     | Brooklyn    | 133371     |
+| Brooklyn      | Manhattan   | 127860     |
+| Manhattan     | Queens      | 4097       |
+| Queens        | Manhattan   | 3998       |
+| Queens        | Brooklyn    | 1922       |
+| Brooklyn      | Queens      | 1885       |
+| Queens        | Queens      | 1417       |
 
 
+#### Correlation Between Weather and Trip Duration
+```
+SELECT 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation, 
+    AVG(trip_minutes) AS avg_trip_duration
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation
+ORDER BY avg_trip_duration DESC;
+```
+| day_mean_temperature | day_mean_wind_speed | day_total_precipitation | avg_trip_duration |
+|----------------------|---------------------|-------------------------|-------------------|
+| 29.9                 | 10.6                | 0.25                    | 149.7550111       |
+| 66.6                 | 3.0                 | 0                       | 87.19738507       |
+| 51.8                 | 4.5                 | 0                       | 86.27378965       |
+| 74.9                 | 3.6                 | 0                       | 84.07349666       |
+| 74.9                 | 3.9                 | 0.59                    | 83.34513274       |
+| 49.9                 | 4.3                 | 0                       | 76.25455751       |
+| 67.9                 | 3.7                 | 0.05                    | 75.17521727       |
+| 59.3                 | 2.8                 | 0                       | 74.87313173       |
+| 35.5                 | 9.3                 | 1.83                    | 74.21652422       |
+| 62                   | 0.7                 | 0.01                    | 72.16622163       |
+| 58.9                 | 2.6                 | 0.89                    | 71.91924582       |
+| 59.8                 | 7.6                 | 0.04                    | 71.79809976       |
+| 45.7                 | 2.0                 | 0                       | 71.10910498       |
+#### User Type Preferences
+Analyze if user types prefer specific neighborhoods or boroughs.
+```
+SELECT 
+    usertype, 
+    borough_start, 
+    COUNT(*) AS trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY usertype, borough_start
+ORDER BY usertype, trip_count DESC;
+```
+| usertype   | borough_start | trip_count |
+|------------|---------------|------------|
+| Customer   | Manhattan     | 570907     |
+| Customer   | Brooklyn      | 75579      |
+| Customer   | Queens        | 1957       |
+| Subscriber | Manhattan     | 1390419    |
+| Subscriber | Brooklyn      | 193961     |
+| Subscriber | Queens        | 5380       |
 
+#### Round Trips
+Identify round trips (where zip_code_start = zip_code_end).
+```
+SELECT 
+    COUNT(*) AS round_trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+WHERE zip_code_start = zip_code_end;
+```
+| round_trip_count |
+|------------------|
+| 196288           |

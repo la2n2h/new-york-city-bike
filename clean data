@@ -1,0 +1,176 @@
+## Ensure Data Integrity
+
+### Check for Missing Values
+Identify columns with missing or null values.
+
+COUNT(*) AS total_rows,
+    COUNT(usertype) AS usertype_missing,
+    COUNT(zip_code_start) AS zip_code_start_missing,
+    COUNT(borough_start) AS borough_start_missing,
+    COUNT(neighborhood_start) AS neighborhood_start_missing,
+    COUNT(zip_code_end) AS zip_code_end_missing,
+    COUNT(borough_end) AS borough_end_missing,
+    COUNT(neighborhood_end) AS neighborhood_end_missing,
+    COUNT(start_day) AS start_day_missing,
+    COUNT(stop_day) AS stop_day_missing,
+    COUNT(day_mean_temperature) AS day_mean_temperature_missing,
+    COUNT(day_mean_wind_speed) AS day_mean_wind_speed_missing,
+    COUNT(day_total_precipitation) AS day_total_precipitation_missing,
+    COUNT(trip_minutes) AS trip_minutes_missing,
+    COUNT(trip_count) AS trip_count_missing
+FROM bike_share_data;
+
+There is not columns with missing or null values.
+
+### Check for Duplicates
+Identify duplicate rows based on unique identifiers (e.g., trip ID or a combination of columns).
+
+SELECT 
+    usertype, zip_code_start, borough_start, neighborhood_start, 
+    zip_code_end, borough_end, neighborhood_end, start_day, stop_day, 
+    COUNT(*) AS duplicate_count
+FROM bike_share_data
+GROUP BY 
+    usertype, zip_code_start, borough_start, neighborhood_start, 
+    zip_code_end, borough_end, neighborhood_end, start_day, stop_day
+HAVING COUNT(*) > 1;
+
+there are 622588 rows have dublicate value
+
+### Validate Data Types
+Ensure all columns have the correct data types (e.g., trip_minutes should be numeric, start_day and stop_day should be dates).
+SELECT 
+    COLUMN_NAME, DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'bike_share_data';
+
+### Check for Outliers
+Identify outliers in numeric columns like trip_minutes, day_mean_temperature, etc.
+SELECT 
+    MIN(trip_minutes) AS min_trip_minutes,
+    MAX(trip_minutes) AS max_trip_minutes,
+    AVG(trip_minutes) AS avg_trip_minutes,
+    MIN(day_mean_temperature) AS min_temperature,
+    MAX(day_mean_temperature) AS max_temperature,
+    AVG(day_mean_temperature) AS avg_temperature
+FROM bike_share_data;
+
+### Validate Zip Codes
+Ensure zip_code_start and zip_code_end are valid (e.g., 5 digits).
+SELECT 
+    zip_code_start, zip_code_end
+FROM bike_share_data
+WHERE LENGTH(zip_code_start) != 5 OR LENGTH(zip_code_end) != 5;
+
+##  Gain Data Insights
+### Identify the distribution of user types (e.g., subscribers vs. casual users).
+SELECT 
+    usertype, COUNT(*) AS user_count
+FROM bike_share_data
+GROUP BY usertype;
+### Most Popular Start and End Neighborhoods;
+SELECT 
+    neighborhood_start, COUNT(*) AS start_count
+FROM bike_share_data
+GROUP BY neighborhood_start
+ORDER BY start_count DESC
+LIMIT 10;
+
+SELECT 
+    neighborhood_end, COUNT(*) AS end_count
+FROM bike_share_data
+GROUP BY neighborhood_end
+ORDER BY end_count DESC
+LIMIT 10;
+
+### Trip Duration Analysis
+SELECT 
+    AVG(trip_minutes) AS avg_trip_duration,
+    MIN(trip_minutes) AS min_trip_duration,
+    MAX(trip_minutes) AS max_trip_duration
+FROM bike_share_data;
+
+
+### Weather Impact on Trips
+SELECT 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation, 
+    AVG(trip_count) AS avg_trip_count
+FROM bike_share_data
+GROUP BY 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation
+ORDER BY avg_trip_count DESC;
+
+###  Daily Trip Trends
+Analyze the number of trips per day.
+SELECT 
+    start_day, 
+    COUNT(*) AS trip_count
+FROM bike_share_data
+GROUP BY start_day
+ORDER BY start_day;
+
+###  Borough-to-Borough Trips
+SELECT 
+    borough_start, 
+    borough_end, 
+    COUNT(*) AS trip_count
+FROM bike_share_data
+GROUP BY borough_start, borough_end
+ORDER BY trip_count DESC;
+
+### Peak Trip Times
+SELECT 
+    HOUR(start_time) AS start_hour, 
+    COUNT(*) AS trip_count
+FROM bike_share_data
+GROUP BY HOUR(start_time)
+ORDER BY trip_count DESC;
+
+### Trip Count by Zip Code
+SELECT 
+    zip_code_start, 
+    COUNT(*) AS start_count
+FROM bike_share_data
+GROUP BY zip_code_start
+ORDER BY start_count DESC;
+
+SELECT 
+    zip_code_end, 
+    COUNT(*) AS end_count
+FROM bike_share_data
+GROUP BY zip_code_end
+ORDER BY end_count DESC;
+
+### Correlation Between Weather and Trip Duration
+SELECT 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation, 
+    AVG(trip_minutes) AS avg_trip_duration
+FROM bike_share_data
+GROUP BY 
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation
+ORDER BY avg_trip_duration DESC;
+
+### User Type Preferences\
+Analyze if user types prefer specific neighborhoods or boroughs.
+SELECT 
+    usertype, 
+    borough_start, 
+    COUNT(*) AS trip_count
+FROM bike_share_data
+GROUP BY usertype, borough_start
+ORDER BY usertype, trip_count DESC;
+
+### Round Trips
+Identify round trips (where zip_code_start = zip_code_end).
+SELECT 
+    COUNT(*) AS round_trip_count
+FROM bike_share_data
+WHERE zip_code_start = zip_code_end;

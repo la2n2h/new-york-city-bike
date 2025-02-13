@@ -1,4 +1,5 @@
 ## Ensure Data Integrity
+ ensure the data is clean, consistent, and free from errors.
 
 ### Check for Missing Values
 Identify columns with missing or null values.
@@ -18,9 +19,26 @@ COUNT(*) AS total_rows,
     COUNT(day_total_precipitation) AS day_total_precipitation_missing,
     COUNT(trip_minutes) AS trip_minutes_missing,
     COUNT(trip_count) AS trip_count_missing
-FROM bike_share_data;
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`;
 
 There is not columns with missing or null values.
+[{
+  "total_rows": "2238203",
+  "usertype_missing": "2238203",
+  "zip_code_start_missing": "2238203",
+  "borough_start_missing": "2238203",
+  "neighborhood_start_missing": "2238203",
+  "zip_code_end_missing": "2238203",
+  "borough_end_missing": "2238203",
+  "neighborhood_end_missing": "2238203",
+  "start_day_missing": "2238203",
+  "stop_day_missing": "2238203",
+  "day_mean_temperature_missing": "2238203",
+  "day_mean_wind_speed_missing": "2238203",
+  "day_total_precipitation_missing": "2238203",
+  "trip_minutes_missing": "2238203",
+  "trip_count_missing": "2238203"
+}]
 
 ### Check for Duplicates
 Identify duplicate rows based on unique identifiers (e.g., trip ID or a combination of columns).
@@ -29,7 +47,7 @@ SELECT
     usertype, zip_code_start, borough_start, neighborhood_start, 
     zip_code_end, borough_end, neighborhood_end, start_day, stop_day, 
     COUNT(*) AS duplicate_count
-FROM bike_share_data
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
 GROUP BY 
     usertype, zip_code_start, borough_start, neighborhood_start, 
     zip_code_end, borough_end, neighborhood_end, start_day, stop_day
@@ -37,12 +55,58 @@ HAVING COUNT(*) > 1;
 
 there are 622588 rows have dublicate value
 
+### remove dublicate rows from tables
+SELECT 
+    usertype, 
+    zip_code_start, 
+    borough_start, 
+    neighborhood_start, 
+    zip_code_end, 
+    borough_end, 
+    neighborhood_end, 
+    start_day, 
+    stop_day,
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation, 
+    trip_minutes, 
+    trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+WHERE (usertype, zip_code_start, borough_start, neighborhood_start, 
+       zip_code_end, borough_end, neighborhood_end, start_day, stop_day) 
+    NOT IN (
+        SELECT 
+            usertype, zip_code_start, borough_start, neighborhood_start, 
+            zip_code_end, borough_end, neighborhood_end, start_day, stop_day
+        FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+        GROUP BY 
+            usertype, zip_code_start, borough_start, neighborhood_start, 
+            zip_code_end, borough_end, neighborhood_end, start_day, stop_day
+        HAVING COUNT(*) > 1
+    );
+
 ### Validate Data Types
 Ensure all columns have the correct data types (e.g., trip_minutes should be numeric, start_day and stop_day should be dates).
 SELECT 
     COLUMN_NAME, DATA_TYPE
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'bike_share_data';
+FROM `deductive-wares-447204-s0.biketrip.INFORMATION_SCHEMA.COLUMNS`
+WHERE TABLE_NAME = 'bike_trip';
+
+COLUMN_NAME	DATA_TYPE
+usertype	STRING
+zip_code_start	STRING
+borough_start	STRING
+neighborhood_start	STRING
+zip_code_end	STRING
+borough_end	STRING
+neighborhood_end	STRING
+start_day	DATE
+stop_day	DATE
+day_mean_temperature	FLOAT64
+day_mean_wind_speed	FLOAT64
+day_total_precipitation	FLOAT64
+trip_minutes	FLOAT64
+trip_count	INT64
 
 ### Check for Outliers
 Identify outliers in numeric columns like trip_minutes, day_mean_temperature, etc.
@@ -53,14 +117,24 @@ SELECT
     MIN(day_mean_temperature) AS min_temperature,
     MAX(day_mean_temperature) AS max_temperature,
     AVG(day_mean_temperature) AS avg_temperature
-FROM bike_share_data;
+FROM`deductive-wares-447204-s0.biketrip.bike_trip`;
+[{
+  "min_trip_minutes": "0.0",
+  "max_trip_minutes": "97740.0",
+  "avg_trip_minutes": "37.564765126308608",
+  "min_temperature": "9.8",
+  "max_temperature": "88.0",
+  "avg_temperature": "61.118536522379991"
+}]
 
 ### Validate Zip Codes
 Ensure zip_code_start and zip_code_end are valid (e.g., 5 digits).
 SELECT 
     zip_code_start, zip_code_end
-FROM bike_share_data
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
 WHERE LENGTH(zip_code_start) != 5 OR LENGTH(zip_code_end) != 5;
+
+There is no data to display.
 
 ##  Gain Data Insights
 ### Identify the distribution of user types (e.g., subscribers vs. casual users).

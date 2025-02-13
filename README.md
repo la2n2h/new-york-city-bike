@@ -77,6 +77,115 @@ Week 2-3 : SQL and ETL development.
 Week 3-4: Finaize SQL. Dashboard design. 1st draft review with peers
 Week 5-6: Dash board development and testing
 
+# PROCESS
+## Ensure Data Integrity
+ ensure the data is clean, consistent, and free from errors.
+ #### Check for Missing Values
+Identify columns with missing or null values.
+```
+COUNT(*) AS total_rows,
+    COUNT(usertype) AS usertype_missing,
+    COUNT(zip_code_start) AS zip_code_start_missing,
+    COUNT(borough_start) AS borough_start_missing,
+    COUNT(neighborhood_start) AS neighborhood_start_missing,
+    COUNT(zip_code_end) AS zip_code_end_missing,
+    COUNT(borough_end) AS borough_end_missing,
+    COUNT(neighborhood_end) AS neighborhood_end_missing,
+    COUNT(start_day) AS start_day_missing,
+    COUNT(stop_day) AS stop_day_missing,
+    COUNT(day_mean_temperature) AS day_mean_temperature_missing,
+    COUNT(day_mean_wind_speed) AS day_mean_wind_speed_missing,
+    COUNT(day_total_precipitation) AS day_total_precipitation_missing,
+    COUNT(trip_minutes) AS trip_minutes_missing,
+    COUNT(trip_count) AS trip_count_missing
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`;
+````
+There is not columns with missing or null values.
+#### Check for Duplicates
+  Identify duplicate rows based on unique identifiers (e.g., trip ID or a combination of columns).
+  ```
+SELECT 
+    usertype, zip_code_start, borough_start, neighborhood_start, 
+    zip_code_end, borough_end, neighborhood_end, start_day, stop_day, 
+    COUNT(*) AS duplicate_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY 
+    usertype, zip_code_start, borough_start, neighborhood_start, 
+    zip_code_end, borough_end, neighborhood_end, start_day, stop_day
+HAVING COUNT(*) > 1;
+```
+there are 622588 rows have dublicate value
+#### Remove dublicate rows from tables
+```
+SELECT 
+    usertype, 
+    zip_code_start, 
+    borough_start, 
+    neighborhood_start, 
+    zip_code_end, 
+    borough_end, 
+    neighborhood_end, 
+    start_day, 
+    stop_day,
+    day_mean_temperature, 
+    day_mean_wind_speed, 
+    day_total_precipitation, 
+    trip_minutes, 
+    trip_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+WHERE (usertype, zip_code_start, borough_start, neighborhood_start, 
+       zip_code_end, borough_end, neighborhood_end, start_day, stop_day) 
+    NOT IN (
+        SELECT 
+            usertype, zip_code_start, borough_start, neighborhood_start, 
+            zip_code_end, borough_end, neighborhood_end, start_day, stop_day
+        FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+        GROUP BY 
+            usertype, zip_code_start, borough_start, neighborhood_start, 
+            zip_code_end, borough_end, neighborhood_end, start_day, stop_day
+        HAVING COUNT(*) > 1
+    );
+```
+#### Validate Data Types
+Ensure all columns have the correct data types (e.g., trip_minutes should be numeric, start_day and stop_day should be dates).
+```
+SELECT 
+    COLUMN_NAME, DATA_TYPE
+FROM `deductive-wares-447204-s0.biketrip.INFORMATION_SCHEMA.COLUMNS`
+WHERE TABLE_NAME = 'bike_trip';
+```
+#### Check for Outliers
+Identify outliers in numeric columns like trip_minutes, day_mean_temperature, etc.
+```
+SELECT 
+    MIN(trip_minutes) AS min_trip_minutes,
+    MAX(trip_minutes) AS max_trip_minutes,
+    AVG(trip_minutes) AS avg_trip_minutes,
+    MIN(day_mean_temperature) AS min_temperature,
+    MAX(day_mean_temperature) AS max_temperature,
+    AVG(day_mean_temperature) AS avg_temperature
+FROM`deductive-wares-447204-s0.biketrip.bike_trip`;
+```
+#### Validate Zip Codes
+```
+SELECT 
+    zip_code_start, zip_code_end
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+WHERE LENGTH(zip_code_start) != 5 OR LENGTH(zip_code_end) != 5;
+```
+There is no data to display.
+
+##  Gain Data Insights
+#### Identify the distribution of user types (e.g., subscribers vs. casual users).
+```
+SELECT 
+    usertype, COUNT(*) AS user_count
+FROM `deductive-wares-447204-s0.biketrip.bike_trip`
+GROUP BY usertype;
+```
+usertype	user_count
+Subscriber	1589760
+Customer	648443
 
 
 
